@@ -1,5 +1,5 @@
 
-package com.mycompany.lpucache;
+package com.mycompany.lrucache;
 
 
 /**

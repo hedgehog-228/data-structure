@@ -1,5 +1,5 @@
 
-package com.mycompany.lpucache;
+package com.mycompany.lrucache;
 
 import java.util.Scanner;
 
@@ -15,7 +15,7 @@ public class App {
         System.out.print("Enter the capacity of the cache: ");
         int capacity = scanner.nextInt();
 
-        LPUCache cache = new LPUCache(capacity);
+        LRUCache cache = new LRUCache(capacity);
 
         while (true) {
             System.out.println("\nChoose an action:");

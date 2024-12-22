@@ -2,8 +2,9 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/UnitTests/JUnit5TestClass.java to edit this template
  */
-package com.mycompany.lpucache;
+package com.mycompany.lrucache;
 
+import com.mycompany.lrucache.LRUCache;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -17,12 +18,12 @@ import java.util.concurrent.TimeUnit;
  * JUnit tests for LPUCache.
  */
 
-public class LPUCacheTest {
+public class LRUCacheTest {
     
     /** Test basic functionality of the cache */
     @Test
     public void testBasicFunctionality() {
-        LPUCache cache = new LPUCache(3);
+        LRUCache cache = new LRUCache(3);
 
         // Add elements
         cache.put(1, 100);
@@ -51,12 +52,12 @@ public class LPUCacheTest {
     public void testEdgeCases() {
         // Test invalid cache capacity
         IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () -> {
-            new LPUCache(0);
+            new LRUCache(0);
         });
         assertEquals("Cache capacity must be greater than 0.", thrown.getMessage());
 
         // Test single element cache
-        LPUCache singleCache = new LPUCache(1);
+        LRUCache singleCache = new LRUCache(1);
         singleCache.put(1, 100);
         assertEquals(100, singleCache.get(1));
         singleCache.put(2, 200);
@@ -64,7 +65,7 @@ public class LPUCacheTest {
         assertEquals(200, singleCache.get(2));
 
         // Test with Integer.MIN_VALUE and Integer.MAX_VALUE
-        LPUCache edgeCache = new LPUCache(2);
+        LRUCache edgeCache = new LRUCache(2);
         edgeCache.put(Integer.MIN_VALUE, -1);
         edgeCache.put(Integer.MAX_VALUE, 1);
         assertEquals(-1, edgeCache.get(Integer.MIN_VALUE));
@@ -76,7 +77,7 @@ public class LPUCacheTest {
     public void testStress() {
         int capacity = 1000;
         int operations = 1_000_000;
-        LPUCache cache = new LPUCache(capacity);
+        LRUCache cache = new LRUCache(capacity);
         Random random = new Random();
 
         for (int i = 0; i < operations; i++) {
@@ -97,7 +98,7 @@ public class LPUCacheTest {
     /** Test eviction policy correctness */
     @Test
     public void testEvictionPolicy() {
-        LPUCache cache = new LPUCache(3);
+        LRUCache cache = new LRUCache(3);
 
         // Add elements
         cache.put(1, 100);
@@ -120,7 +121,7 @@ public class LPUCacheTest {
     /** Test clear functionality */
     @Test
     public void testClear() {
-        LPUCache cache = new LPUCache(5);
+        LRUCache cache = new LRUCache(5);
         cache.put(1, 100);
         cache.put(2, 200);
         cache.put(3, 300);

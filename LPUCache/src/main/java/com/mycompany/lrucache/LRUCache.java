@@ -1,5 +1,5 @@
 
-package com.mycompany.lpucache;
+package com.mycompany.lrucache;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -8,7 +8,7 @@ import java.util.Map;
  *
  * head - least recent / tail - most recent
  */
-public class LPUCache implements Cache<Integer, Integer> {
+public class LRUCache implements Cache<Integer, Integer> {
     
     private final Node head = new Node(0,0);
     private final Node tail = new Node(0,0);
@@ -17,7 +17,7 @@ public class LPUCache implements Cache<Integer, Integer> {
     private int capacity;
     
     
-    public LPUCache(int capacity){
+    public LRUCache(int capacity){
         if (capacity <= 0) {
         throw new IllegalArgumentException("Cache capacity must be greater than 0.");
         }
