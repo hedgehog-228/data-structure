@@ -15,8 +15,9 @@ public class LRUCache implements Cache<Integer, Integer> {
     
     Map<Integer, Node> nodeMap;
     private int capacity;
-    
-    
+    private int missCount = 0;
+    private int hitCount = 0;
+
     public LRUCache(int capacity){
         if (capacity <= 0) {
         throw new IllegalArgumentException("Cache capacity must be greater than 0.");
@@ -31,12 +32,13 @@ public class LRUCache implements Cache<Integer, Integer> {
     public Integer get(Integer key) {
         
         if (nodeMap.containsKey(key)) {
+            hitCount++;
             Node node = nodeMap.get(key);
             removeNode(node);
             addNode(node);
             return node.value;
         }
-        
+        missCount++;
         return null;
     }
 
@@ -76,6 +78,15 @@ public class LRUCache implements Cache<Integer, Integer> {
         tail.prev = head;
         nodeMap.clear();
     }
+    
+    public int getMissCount() {
+        return missCount;
+    }
+
+    public int getHitCount() {
+        return hitCount;
+    }
+    
     
     public void addNode(Node node) {
         nodeMap.put(node.key, node);

@@ -132,4 +132,37 @@ public class LRUCacheTest {
         assertNull(cache.get(3));
     }
     
+    /** Test hit and miss counters */
+    @Test
+    public void testHitAndMissCounters() {
+        LRUCache cache = new LRUCache(3);
+
+        cache.put(1, 100);
+        cache.put(2, 200);
+        cache.put(3, 300);
+
+        // get element from cache (hit)
+        assertEquals(100, cache.get(1), "Value for key 1 should be 100");
+        assertEquals(1, cache.getHitCount(), "Hit count should be incremented");
+        assertEquals(0, cache.getMissCount(), "Miss count should remain unchanged");
+
+        // get element that isn't exist (miss)
+        assertNull(cache.get(4), "Value for key 4 should be null");
+        assertEquals(1, cache.getHitCount(), "Hit count should remain unchanged");
+        assertEquals(1, cache.getMissCount(), "Miss count should be incremented");
+
+        // new element that replace the oldest
+        cache.put(4, 400);
+
+        // check if new element is miss
+        assertNull(cache.get(2), "Value for key 2 should be null (evicted)");
+        assertEquals(1, cache.getHitCount(), "Hit count should remain unchanged");
+        assertEquals(2, cache.getMissCount(), "Miss count should be incremented");
+
+        // get new element (hit)
+        assertEquals(400, cache.get(4), "Value for key 4 should be 400");
+        assertEquals(2, cache.getHitCount(), "Hit count should be incremented");
+        assertEquals(2, cache.getMissCount(), "Miss count should remain unchanged");
+    }
+    
 }
