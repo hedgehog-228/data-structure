@@ -7,23 +7,26 @@ import java.util.Map;
 /**
  *
  * head - least recent / tail - most recent
+ * Realization of LRU and MRU cache
  */
-public class LRUCache implements Cache<Integer, Integer> {
+public class LruMruCache implements Cache<Integer, Integer> {
     
     private final Node head = new Node(0,0);
     private final Node tail = new Node(0,0);
-    
     Map<Integer, Node> nodeMap;
     private int capacity;
+    private final CacheReplacementPolicy replacementPolicy;
+    
     private int missCount = 0;
     private int hitCount = 0;
 
-    public LRUCache(int capacity){
+    public LruMruCache(int capacity, CacheReplacementPolicy replacementPolicy){
         if (capacity <= 0) {
         throw new IllegalArgumentException("Cache capacity must be greater than 0.");
         }
         nodeMap = new HashMap<>(capacity);
         this.capacity = capacity;
+        this.replacementPolicy = replacementPolicy;
         head.next = tail;
         tail.prev = head;
     }
@@ -47,11 +50,14 @@ public class LRUCache implements Cache<Integer, Integer> {
 
         if (nodeMap.containsKey(key)){
             removeNode(nodeMap.get(key));
-        } else {
-            if (nodeMap.size() == capacity) {
-                removeNode(head.next);
+        } else if (nodeMap.size() == capacity) {
+                if (replacementPolicy == CacheReplacementPolicy.LRU) {
+                    removeNode(head.next); // remove least recent used
+                } else  if (replacementPolicy == CacheReplacementPolicy.MRU) {
+                    removeNode(tail.prev); // remove most recent used 
+                } 
             }
-        }
+       
         addNode(new Node(key,value));
     }
 

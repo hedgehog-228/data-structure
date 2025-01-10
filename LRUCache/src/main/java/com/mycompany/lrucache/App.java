@@ -8,7 +8,7 @@ public class App {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         Random random = new Random();
-        LRUCache cache = null;
+        LruMruCache cache = null;
         
         System.out.println("Welcome to the LPUCache demo!");
         while (true) {
@@ -22,13 +22,43 @@ public class App {
                 case 1 -> {
                     System.out.print("Enter the capacity of the cache: ");
                     int capacity = scanner.nextInt();
-                    cache = new LRUCache(capacity);
-                    System.out.println("Cache created with capacity " + capacity + ".");
+                    System.out.print("Enter the replacement policy (1 for LRU, 2 for MRU): ");
+                    int policyChoice = scanner.nextInt();
+                    while(true){
+                        if (policyChoice == 1 || policyChoice == 2){
+                        CacheReplacementPolicy policy = (policyChoice == 2) 
+                            ? CacheReplacementPolicy.MRU 
+                            : CacheReplacementPolicy.LRU;
+
+                        cache = new LruMruCache(capacity, policy);
+                        System.out.println("Cache created with " + policy.getDescription() + " policy and with capacity " + capacity + ".");
+                        
+                        break;
+                        } else {
+                            System.out.println("Oops, wrong input. Write 1 or 2");
+                        }
+                    }
                 }
                 
                 case 2 -> {
                     int capacity = 100;
-                    cache = new LRUCache(capacity);
+                    System.out.print("Enter the replacement policy (1 for LRU, 2 for MRU): ");
+                    int policyChoice = scanner.nextInt();
+                    
+                    while(true){
+                        if (policyChoice == 1 || policyChoice == 2){
+                        CacheReplacementPolicy policy = (policyChoice == 2) 
+                            ? CacheReplacementPolicy.MRU 
+                            : CacheReplacementPolicy.LRU;
+
+                        cache = new LruMruCache(capacity, policy);
+                        System.out.println("Cache created with " + policy.getDescription() + " policy and with capacity " + capacity + ".");
+                        
+                        break;
+                        } else {
+                            System.out.println("Oops, wrong input. Write 1 or 2");
+                        }
+                    }
 
                     for (int i = 0; i < capacity; i++) {
                         int randomKey = random.nextInt(1000); // Random key [0, 999]
@@ -59,7 +89,8 @@ public class App {
             System.out.println("4. Display cache size");
             System.out.println("5. Display cache capacity");
             System.out.println("6. Clear the cache");
-            System.out.println("7. Exit");
+            System.out.println("7. Hits/Misses");
+            System.out.println("8. Exit");
             System.out.print("Enter your choice: ");
 
             int choice = scanner.nextInt();
@@ -85,7 +116,14 @@ public class App {
                     // Calculation 20% "hot" keys
                     int hotKeysCount = (int) Math.ceil(keys.length * 0.2); // 20% from length = hotKeysCount
                     Integer[] hotKeys = new Integer[hotKeysCount];
-                    System.arraycopy(keys, 0, hotKeys, 0, hotKeysCount); // copy key[for 0 < hotKeysCount] from keys[] to hotKeys[] 
+                    //half random half from cache
+                    for (int i = 0; i < hotKeysCount; i++) {
+                       if (i % 2 == 0 && i < keys.length) {
+                           hotKeys[i] = keys[i]; 
+                       } else {
+                           hotKeys[i] = random.nextInt(2000);
+                       }
+                   }
 
                     // random generated random access
                     int accessCount = random.nextInt(100000);
@@ -132,6 +170,11 @@ public class App {
                 }
                 
                 case 7 -> {
+                    System.out.println("Cache hits: " + cache.getHitCount());
+                    System.out.println("Cache misses: " + cache.getMissCount());
+                }
+                
+                case 8 -> {
                     System.out.println("Exiting...");
                     scanner.close();
                     return;
