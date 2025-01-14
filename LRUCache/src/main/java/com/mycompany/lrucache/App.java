@@ -8,7 +8,7 @@ public class App {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         Random random = new Random();
-        LruMruCache cache = null;
+        MultiPolicyCache cache = null;
         
         System.out.println("Welcome to the LPUCache demo!");
         while (true) {
@@ -19,10 +19,13 @@ public class App {
 
             int choice = scanner.nextInt();
             switch (choice) {
+                
+                // OWN CACHE
+                
                 case 1 -> {
                     System.out.print("Enter the capacity of the cache: ");
                     int capacity = scanner.nextInt();
-                    System.out.print("Enter the replacement policy (1 for LRU, 2 for MRU): ");
+                    System.out.print("Enter the replacement policy (1 for LRU, 2 for MRU, 3 for LFU): ");
                     int policyChoice = scanner.nextInt();
                     while(true){
                         if (policyChoice == 1 || policyChoice == 2){
@@ -30,19 +33,28 @@ public class App {
                             ? CacheReplacementPolicy.MRU 
                             : CacheReplacementPolicy.LRU;
 
-                        cache = new LruMruCache(capacity, policy);
+                        cache = new MultiPolicyCache(capacity, policy);
                         System.out.println("Cache created with " + policy.getDescription() + " policy and with capacity " + capacity + ".");
                         
                         break;
-                        } else {
+                        } else if (policyChoice == 3) {
+                            CacheReplacementPolicy policy = CacheReplacementPolicy.LFU;
+                            cache = new MultiPolicyCache(capacity, policy);
+                            System.out.println("Cache created with " + policy.getDescription() + " policy and with capacity " + capacity + ".");
+
+                            break;
+                        }
+                        else {
                             System.out.println("Oops, wrong input. Write 1 or 2");
                         }
                     }
                 }
                 
+                // RANDOM GENERATED CACHE
+                
                 case 2 -> {
                     int capacity = 100;
-                    System.out.print("Enter the replacement policy (1 for LRU, 2 for MRU): ");
+                    System.out.print("Enter the replacement policy (1 for LRU, 2 for MRU, 3 for LFU): ");
                     int policyChoice = scanner.nextInt();
                     
                     while(true){
@@ -51,10 +63,16 @@ public class App {
                             ? CacheReplacementPolicy.MRU 
                             : CacheReplacementPolicy.LRU;
 
-                        cache = new LruMruCache(capacity, policy);
+                        cache = new MultiPolicyCache(capacity, policy);
                         System.out.println("Cache created with " + policy.getDescription() + " policy and with capacity " + capacity + ".");
                         
                         break;
+                        } else if (policyChoice == 3) {
+                            CacheReplacementPolicy policy = CacheReplacementPolicy.LFU;
+                            cache = new MultiPolicyCache(capacity, policy);
+                            System.out.println("Cache created with " + policy.getDescription() + " policy and with capacity " + capacity + ".");
+
+                            break;
                         } else {
                             System.out.println("Oops, wrong input. Write 1 or 2");
                         }
@@ -68,6 +86,8 @@ public class App {
 
                     System.out.println("Cache created with random data (100 keys).");
                 }
+                
+                //EXIT
                 
                 case 3 -> {
                     System.out.println("Exiting...");
@@ -96,6 +116,9 @@ public class App {
             int choice = scanner.nextInt();
 
             switch (choice) {
+                
+                // PUT
+                
                 case 1 -> {
                     System.out.print("Enter key: ");
                     int key = scanner.nextInt();
@@ -104,6 +127,8 @@ public class App {
                     cache.put(key, value);
                     System.out.println("Key-value pair added.");
                 }
+                
+                // RANDOM
                 
                 case 2 -> {                  
                     Integer[] keys = new Integer[cache.nodeMap.size()];
@@ -149,6 +174,8 @@ public class App {
                     
                 }
                 
+                // GET
+                
                 case 3 -> {
                     System.out.print("Enter key to retrieve: ");
                     int key = scanner.nextInt();
@@ -160,19 +187,29 @@ public class App {
                     }
                 }
                 
+                //DISPLAY CACHE SIZE
+                
                 case 4 -> System.out.println("Current cache size: " + cache.size());
                 
+                // DISPLAY CACHE CAPACITY
+                
                 case 5 -> System.out.println("Cache capacity: " + cache.capacity());
+                
+                // CLEAR CACHE
                 
                 case 6 -> {
                     cache.clear();
                     System.out.println("Cache cleared.");
                 }
                 
+                // HITS MISSES
+                
                 case 7 -> {
                     System.out.println("Cache hits: " + cache.getHitCount());
                     System.out.println("Cache misses: " + cache.getMissCount());
                 }
+                
+                // EXIT
                 
                 case 8 -> {
                     System.out.println("Exiting...");

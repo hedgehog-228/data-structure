@@ -1,5 +1,5 @@
-com\mycompany\lrucache\LruMruCache.class
 com\mycompany\lrucache\Cache.class
 com\mycompany\lrucache\App.class
 com\mycompany\lrucache\CacheReplacementPolicy.class
-com\mycompany\lrucache\LruMruCache$Node.class
+com\mycompany\lrucache\MultiPolicyCache.class
+com\mycompany\lrucache\MultiPolicyCache$Node.class

@@ -7,14 +7,14 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.Random;
 
 /**
- * JUnit tests for LRU and MRU cache policies.
+ * JUnit tests for LRU, LFU and MRU caches policies.
  */
-public class LruMruCacheTest {
+public class MultiPolicyCacheTest {
 
-    /** Test LRU policy */
+    /* Test LRU policy */
     @Test
     public void testLruPolicy() {
-        LruMruCache cache = new LruMruCache(3, CacheReplacementPolicy.LRU);
+        MultiPolicyCache cache = new MultiPolicyCache(3, CacheReplacementPolicy.LRU);
 
         // Add elements
         cache.put(1, 100);
@@ -26,7 +26,6 @@ public class LruMruCacheTest {
         assertEquals(200, cache.get(2));
         assertEquals(300, cache.get(3));
 
-        // Add new element, evicting least recently used (key 1)
         cache.put(4, 400);
         assertNull(cache.get(1)); // 1 should be evicted
         assertEquals(200, cache.get(2));
@@ -34,10 +33,10 @@ public class LruMruCacheTest {
         assertEquals(400, cache.get(4));
     }
 
-    /** Test MRU policy */
+    /* Test MRU policy */
     @Test
     public void testMruPolicy() {
-        LruMruCache cache = new LruMruCache(3, CacheReplacementPolicy.MRU);
+        MultiPolicyCache cache = new MultiPolicyCache(3, CacheReplacementPolicy.MRU);
 
         // Add elements
         cache.put(1, 100);
@@ -49,24 +48,53 @@ public class LruMruCacheTest {
         assertEquals(200, cache.get(2));
         assertEquals(300, cache.get(3));
 
-        // Add new element, evicting most recently used (key 3)
         cache.put(4, 400);
         assertEquals(100, cache.get(1));
         assertEquals(200, cache.get(2));
         assertNull(cache.get(3)); // 3 should be evicted
         assertEquals(400, cache.get(4));
     }
-
-    /** Test hit and miss counters with LRU */
+    
+    /* Test LFU policy */
     @Test
-    public void testHitAndMissCountersLru() {
-        LruMruCache cache = new LruMruCache(2, CacheReplacementPolicy.LRU);
+    public void testLfuPolicy() {
+        MultiPolicyCache cache = new MultiPolicyCache(3, CacheReplacementPolicy.LFU);
+
+        // Add elements
+        cache.put(1, 100);
+        cache.put(2, 200);
+        cache.put(3, 300);
+
+        // Access elements to increase frequencies
+        cache.get(1); // Frequency  = 2
+        cache.get(2); 
+        cache.get(2); // Frequency = 3
+
+        cache.put(4, 400);
+        assertNull(cache.get(3)); // 3 should be evicted
+        assertEquals(100, cache.get(1));
+        assertEquals(200, cache.get(2));
+        assertEquals(400, cache.get(4));
+        
+        cache.get(1); // Frequency  = 3
+        cache.get(4);
+        cache.get(4); // Frequency  = 3
+        
+        cache.put(5, 500);
+        // (1) F = 3 (2) F = 3 (3) F = 3
+        assertNull(cache.get(1));
+    }
+
+    /* Test hit and miss counters with LRU */
+    @Test
+    public void testHitAndMissCounters() {
+        MultiPolicyCache cache = new MultiPolicyCache(2, CacheReplacementPolicy.LRU);
 
         // Add elements
         cache.put(1, 100);
         cache.put(2, 200);
 
-        // Access elements (hits)
+        // access elements (hits)
         assertEquals(100, cache.get(1));
         assertEquals(200, cache.get(2));
         assertEquals(2, cache.getHitCount());
@@ -78,33 +106,11 @@ public class LruMruCacheTest {
         assertEquals(1, cache.getMissCount());
     }
 
-    /** Test hit and miss counters with MRU */
-    @Test
-    public void testHitAndMissCountersMru() {
-        LruMruCache cache = new LruMruCache(2, CacheReplacementPolicy.MRU);
-
-        // Add elements
-        cache.put(1, 100);
-        cache.put(2, 200);
-
-        // Access elements (hits)
-        assertEquals(100, cache.get(1));
-        assertEquals(200, cache.get(2));
-        assertEquals(2, cache.getHitCount());
-        assertEquals(0, cache.getMissCount());
-
-        // Access a non-existing element (miss)
-        assertNull(cache.get(3));
-        assertEquals(2, cache.getHitCount());
-        assertEquals(1, cache.getMissCount());
-    }
-
-
-    /** Test LRU policy with edge cases */
+    /* Test LRU policy with edge cases */
     @Test
     public void testEdgeCasesLru() {
-        // Edge case: Single element cache
-        LruMruCache cache = new LruMruCache(1, CacheReplacementPolicy.LRU);
+        // Single element cache
+        MultiPolicyCache cache = new MultiPolicyCache(1, CacheReplacementPolicy.LRU);
 
         cache.put(1, 100);
         assertEquals(100, cache.get(1)); // Hit
@@ -112,18 +118,18 @@ public class LruMruCacheTest {
         assertNull(cache.get(1)); // Evicted
         assertEquals(200, cache.get(2)); // Hit
 
-        // Edge case: Empty cache (no capacity)
+        // Empty cache (no capacity)
         IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () -> {
-            new LruMruCache(0, CacheReplacementPolicy.LRU);
+            new MultiPolicyCache(0, CacheReplacementPolicy.LRU);
         });
         assertEquals("Cache capacity must be greater than 0.", thrown.getMessage());
     }
 
-    /** Test MRU policy with edge cases */
+    /* Test MRU policy with edge cases */
     @Test
     public void testEdgeCasesMru() {
-        // Edge case: Single element cache
-        LruMruCache cache = new LruMruCache(1, CacheReplacementPolicy.MRU);
+        // Single element cache
+        MultiPolicyCache cache = new MultiPolicyCache(1, CacheReplacementPolicy.MRU);
 
         cache.put(1, 100);
         assertEquals(100, cache.get(1)); // Hit
@@ -131,14 +137,35 @@ public class LruMruCacheTest {
         assertNull(cache.get(1)); // Evicted
         assertEquals(200, cache.get(2)); // Hit
 
-        // Edge case: Empty cache (no capacity)
+        // Empty cache (no capacity)
         IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () -> {
-            new LruMruCache(0, CacheReplacementPolicy.MRU);
+            new MultiPolicyCache(0, CacheReplacementPolicy.MRU);
+        });
+        assertEquals("Cache capacity must be greater than 0.", thrown.getMessage());
+    }
+    
+    
+    /* Test LFU policy with edge cases */
+    @Test
+    public void testEdgeCasesLfu() {
+        // Single element cache
+        MultiPolicyCache cache = new MultiPolicyCache(1, CacheReplacementPolicy.LFU);
+
+        cache.put(1, 100);
+        assertEquals(100, cache.get(1)); // Hit
+        cache.put(2, 200);
+        assertNull(cache.get(1)); // evicted due to capacity
+        assertEquals(200, cache.get(2)); // Hit
+
+        // empty cache (no capacity)
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () -> {
+            new MultiPolicyCache(0, CacheReplacementPolicy.LFU);
         });
         assertEquals("Cache capacity must be greater than 0.", thrown.getMessage());
     }
 
-    /** Stress test for both LRU and MRU policies */
+
+    /* Stress test for LRU, LFU and MRU policies */
     @Test
     public void testStressWithRandomOperations() {
         int capacity = 100;
@@ -146,7 +173,7 @@ public class LruMruCacheTest {
         Random random = new Random();
 
         for (CacheReplacementPolicy policy : CacheReplacementPolicy.values()) {
-            LruMruCache cache = new LruMruCache(capacity, policy);
+            MultiPolicyCache cache = new MultiPolicyCache(capacity, policy);
 
             for (int i = 0; i < operations; i++) {
                 int key = random.nextInt(1_000); // Random key
@@ -159,41 +186,54 @@ public class LruMruCacheTest {
                 }
             }
 
-            // Validate that cache size does not exceed capacity
+            // cache size does not exceed capacity
             assertTrue(cache.size() <= capacity, "Cache size exceeds capacity for " + policy.getDescription());
         }
     }
 
-    /** Stress test with hot keys (80/20 rule) */
+    /* Stress test with hot keys (80/20 rule) */
     @Test
-    public void testStressWithHotKeys() {
+    public void testStressWithHotKeysUpdated() {
         int capacity = 100;
         int operations = 100_000;
         Random random = new Random();
 
         for (CacheReplacementPolicy policy : CacheReplacementPolicy.values()) {
-            LruMruCache cache = new LruMruCache(capacity, policy);
+            MultiPolicyCache cache = new MultiPolicyCache(capacity, policy);
 
-            // Create hot keys (20% of capacity)
-            int[] hotKeys = new int[capacity / 5];
-            for (int i = 0; i < hotKeys.length; i++) {
-                hotKeys[i] = random.nextInt(1_000);
-                cache.put(hotKeys[i], random.nextInt(10_000));
+            // start input of cache
+            for (int i = 0; i < capacity; i++) {
+                cache.put(i, random.nextInt(10_000));
             }
 
-            for (int i = 0; i < operations; i++) {
-                boolean isHot = random.nextDouble() < 0.8; // 80% chance to use hot keys
-                int key = isHot ? hotKeys[random.nextInt(hotKeys.length)] : random.nextInt(1_000);
-
-                if (random.nextBoolean()) {
-                    cache.put(key, random.nextInt(10_000)); // Randomly add to cache
+            // creating hot keys with random + from cache keys 
+            Integer[] keys = cache.nodeMap.keySet().toArray(new Integer[0]);
+            int hotKeysCount = (int) Math.ceil(keys.length * 0.2); 
+            Integer[] hotKeys = new Integer[hotKeysCount];
+            for (int i = 0; i < hotKeysCount; i++) {
+                if (i % 2 == 0 && i < keys.length) {
+                    hotKeys[i] = keys[i];
                 } else {
-                    cache.get(key); // Randomly access cache
+                    hotKeys[i] = random.nextInt(2000);
                 }
             }
 
-            // Validate that cache size does not exceed capacity
+            for (int i = 0; i < operations; i++) {
+                boolean isHot = random.nextDouble() < 0.8; // 80% of hot keys
+                int key = isHot
+                        ? hotKeys[random.nextInt(hotKeys.length)]
+                        : random.nextInt(2000);
+
+                if (random.nextBoolean()) {
+                    cache.put(key, random.nextInt(10_000)); // random adding
+                } else {
+                    cache.get(key); // random access
+                }
+            }
+
+            // cache size does not exceed capacity
             assertTrue(cache.size() <= capacity, "Cache size exceeds capacity for " + policy.getDescription());
         }
     }
+
 }
